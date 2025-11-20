@@ -1,0 +1,53 @@
+model_string <- "
+
+# Data block
+# data{...}
+
+# Model
+model{
+
+
+# Prior for trapping efficiency
+# --------------------------------
+
+a ~ dnorm(0,0.01) # complétement sans information à priori
+b ~ dnorm(0,0.01) # complétement sans information à priori
+
+# O.1 = précision c'est l'inverse de sd donc prior peu informatif 
+
+sigma ~ dunif(0,10)
+tau_z <- (1/(sigma*sigma))
+
+# Tau z non informatif ! 
+
+for(i in 1:n){
+
+logit_theta[i] ~ dnorm(a*Q[i]+b, tau_z)
+
+theta[i] <- exp(logit_theta[i]) / (1+exp(logit_theta[i]) ) 
+}
+
+# Prior for N
+# --------------------------------
+
+Nmin <- 0
+Nmax <- 50000
+
+
+for(i in 1:n){
+Nunif[i] ~ dunif(Nmin,Nmax) 
+N[i] <- round(Nunif[i])
+}
+
+
+# Likelihood
+# --------------------------------
+
+for(i in 1:n){
+c[i] ~ dbin(theta[i],N[i])
+rm[i] ~ dbin(theta[i], m[i])
+}
+
+
+}"
+

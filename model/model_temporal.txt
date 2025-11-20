@@ -1,0 +1,39 @@
+model_string <- "
+
+# Data block
+# data{...}
+
+# Model
+model{
+
+
+# Prior for trapping efficiency
+# --------------------------------
+for(i in 1:n){
+theta[i] ~ dbeta(1,1)
+}
+
+# Prior for N
+# --------------------------------
+
+Nmin <- 0
+Nmax <- 50000
+
+
+for(i in 1:n){
+Nunif[i] ~ dunif(Nmin,Nmax) 
+N[i] <- round(Nunif[i])
+}
+
+
+# Likelihood
+# --------------------------------
+
+for(i in 1:n){
+c[i] ~ dbin(theta[i],N[i])
+rm[i] ~ dbin(theta[i], m[i])
+}
+
+
+}"
+
