@@ -4,6 +4,14 @@ title: Modélisation hiérarchique bayésienne de la dynamique des populations d
 author: "Placier Moïse & Vadim Lefevre"
 date: "`r Sys.Date()`"
 output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    latex_engine: xelatex
+  word_document:
+    toc: true
+    toc_depth: '3'
   html_document:
     toc: true
     toc_depth: 3
@@ -11,14 +19,6 @@ output:
     number_sections: true
     theme: united
     highlight: tango
-  word_document:
-    toc: true
-    toc_depth: '3'
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    number_sections: true
-    latex_engine: xelatex
 subtitle: Application à l’estimation du flux de migration des smolts par capture–marquage–recapture
   (CMR)
 header-includes:
@@ -58,7 +58,7 @@ L'objectif principal de cet étude est d'**estimer le nombre total de smolts qui
 ## Données disponibles
 Les données proviennent d’un programme de suivi des populations et nous utiliserons spécifiquement les données issues de la station de contrôle de Cerisel, un moulin situé sur l’Oir, un affluent de la Sélune. Ce site est équipé d’un dispositif de piégeage permettant de réaliser des opérations de capture-marquage-recapture (CMR) des smolts qui dévalent vers l’océan. Les données couvrent la période 1986-2003.
 
-![Dispositif de piégeage CMR des smolts à Cerisel](piège.png){ width=6cm }
+![Dispositif de piégeage CMR des smolts à Cerisel](img/piège.png){ width=6cm }
 
 Chaque année **t**, un nombre **N(t)** de smolts dévalent l'Oir. Une proportion $\theta(t)$ emprunte le bief d’amenée vers le piège et un nombre $c(t)$ de smolts sont capturés, ici $\theta(t)$ correspond donc à **l'efficacité du piège**.  Parmis les smolts capturés, $m(t)$ sont marquées à l’aide de tags et sont ensuite relâchés à environ 2 km en amont du piège. Enfin, un nombre $rm(t)$ d'entre eux sont recapturés lors de leur seconde dévalaison. Le débit de la rivière *Q(t)* est également enregistré comme covariable environnementale car cela à impact notable sur **l'efficacité du piège** $\theta(t)$.
 
@@ -166,7 +166,7 @@ L’objectif est de s’assurer que l’échantillonnage MCMC est fiable et que 
 
 Nous commençons par l’évaluation de la convergence des hyperparamètres $a$, $b$ et $\sigma$.
 
-![Traceplots des hyperparamètres a, b et σ. Les chaînes sont bien mélangées et régulières.](TracePlot_a_b_sigma.png){ width=80% }
+![Traceplots des hyperparamètres a, b et σ. Les chaînes sont bien mélangées et régulières.](img/TracePlot_a_b_sigma.png){ width=80% }
 
 ```{r, echo=FALSE}
 diag_hyper <- data.frame(
@@ -196,7 +196,7 @@ Les PSRF proches de 1 pour chacun des hyperparamètres indiquent une convergence
 
 Nous examinons ensuite la convergence des paramètres latents $\theta(t)$ et $N(t)$. Les traceplots ci-dessous présentent des années représentatives (1, 12 et 18).
 
-![Traceplots de paramètres latents sélectionnés. Les chaînes montrent un bon mélange et pas de structure multi-modale.](TracePlot_param_latents.png)
+![Traceplots de paramètres latents sélectionnés. Les chaînes montrent un bon mélange et pas de structure multi-modale.](img/TracePlot_param_latents.png)
 
 ```{r, echo=FALSE}
 library(knitr)
@@ -234,13 +234,13 @@ L’objectif de cette section est de confirmer les hypothèses du modèle hiéra
 
 Les densités postérieures des hyperparamètres $a$ et $b$ sont présentées ci dessous.
 
-![Densité des hyperparamètres a et b](Densite_a_b.png){ width=80% }
+![Densité des hyperparamètres a et b](img/Densite_a_b.png){ width=80% }
 
 La densité postérieure de $a$ est fortement négative et centrée autour de $\approx -0.3$, indiquant que la pente de la régression logit($\theta_t$) ∼ $Q(t)$ est négative. Autrement dit, une augmentation du débit $Q(t)$ entraîne une diminution de l’efficacité du piège $\theta(t)$. Ce résultat est cohérent avec le mécanisme attendu : lorsque le débit total de la rivière augmente, le débit relatif dans le bief d’amenée reste constant, ce qui réduit la proportion de smolts empruntant ce bras et conduit à une baisse de l’efficacité de capture.
 
-La figure suivante illustre cette relation de décroissante en présentant les moyennes postérieures de $\theta(t)$ et de $\text{logit}(\theta(t))$ en fonction du débit $Q(t)$ pour les 18 années de suivi.
+La figure 5 illustre cette relation de décroissante en présentant les moyennes postérieures de $\theta(t)$ et de $\text{logit}(\theta(t))$ en fonction du débit $Q(t)$ pour les 18 années de suivi.
 
-![Relation entre theta(t), logit(theta(t)) et le débit Q(t)](Theta_Q.png){ width=60% }
+![Relation entre theta(t), logit(theta(t)) et le débit Q(t)](img/Theta_Q.png){ width=70% }
 
 Sur l’échelle logit, la relation apparaît globalement linéaire, ce qui valide visuellement l’hypothèse d’un modèle linéaire $logit(\theta(t)) \sim Q(t)$. Les années pour lesquelles les données de recaptures sont manquantes suivent également la tendance générale, illustrant que le modèle hiérarchique permet de partager l’information.
 
@@ -248,7 +248,7 @@ Sur l’échelle logit, la relation apparaît globalement linéaire, ce qui vali
 
 La figure suivante montre la densité postérieure de $\sigma^2_{\text{z}}$ qui reflète la variabilité résiduelle de $\text{logit}(\theta(t))$ qui n’est pas expliquée par le débit $Q(t)$.
 
-![variabilité résiduelle interannuelle de logit(theta(t)) ∼ Q(t) ](Densite_sigma.png){ width=40% }
+![variabilité résiduelle interannuelle de logit(theta(t)) ∼ Q(t) ](img/Densite_sigma.png){ width=40% }
 
 La simple valeur de $\sigma^2_{\text{z}}$ n’est pas directement interprétable comme la proportion de variance expliquée de $\theta(t)$. Pour quantifier l’importance relative de l’effet du débit et de la variabilité résiduelle, on calcule l’analogue d’un $R^2$ sur l’échelle logit :
 $$
@@ -283,7 +283,7 @@ En revanche, les valeurs élevées de $R^2_{\text{logit}}$ montrent que la relat
 
 La figure suivante présente les distributions postérieures de $\theta(t)$ par année.
 
-![boxplot de l'efficacité par année](efficacite_annee.png){ width=80% }
+![boxplot de l'efficacité par année](img/efficacite_annee.png){ width=80% }
 
 
 Les distributions de $\theta(t)$ sont relativement bien définies, bénéficiant à la fois des données CMR disponibles et du partage d’information hiérarchique. Pour les années sans données de recaptures, le shrinkage ramène $\theta(t)$ vers la moyenne globale $\mu_z$, tout en tenant compte du débit spécifique de ces années et de son effet sur $\theta(t)$ précédemment discuté. Cette illustration met en évidence l’intérêt du modèle hiérarchique pour traiter les valeurs manquantes.
@@ -294,7 +294,7 @@ Les distributions de $\theta(t)$ sont relativement bien définies, bénéficiant
 
 La figure suivante présente la loi jointe de $(\theta(1), N(1))$ pour l'année 1. 
 
-![Loi (theta(1), N(1))](Loi_jointe.png){ width=40% }
+![Loi (theta(1), N(1))](img/Loi_jointe.png){ width=40% }
 
 On observe une corrélation négative entre l’efficacité du piège $\theta_i$ et l’abondance $N_i$. Cela est conforme est conforme aux propriétés des modèles de Capture–Marquage–Recapture : pour un nombre de captures observées donné, une faible efficacité de capture implique nécessairement une abondance plus élevée, et réciproquement.
 
@@ -305,7 +305,7 @@ Cette figure illustre clairement la propagation explicite de l’incertitude ent
 Enfin, les estimations du nombre $N(t)$ de smolts migrants vers l'océan chaques années sont présentés sur la figure suivante (avec intervalles de confiances à 95%). 
 
 
-![Estimations de N(t)](NT.png){ width=80% }
+![Estimations de N(t)](img/NT.png){ width=80% }
 
 On observe une forte variabilité interannuelle de l’abondance des smolts, avec des valeurs allant de quelques centaines à plus de 2500 individus selon les années. Pour les années 10 et 11 (1995 et 1996), pour lesquelles les données de recapture sont manquantes, les estimations restent néanmoins bien définies, avec des distributions relativement étroites pour $N(t)$. Cette précision résulte directement de l’intégration hiérarchique du modèle.
 
