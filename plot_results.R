@@ -135,17 +135,17 @@ densplot(mcmc[,'sigma'],ylab="sigma")
 library(MASS) # necessaire pour la fonction kde2d qui permet de faire les contours
 
 # Will only work if dim theta and N = 1
-if (length(as.vector(mcmc.table$'theta'))!=0){
-  dim1 <- as.vector(mcmc.table$'theta')
-  dim2 <- as.vector(mcmc.table$'N')
+if (length(as.vector(mcmc.table$'Njuv[1]'))!=0){
+  dim1 <- as.vector(mcmc.table$'Njuv[1]')
+  dim2 <- as.vector(mcmc.table$'surv[1]')
 } else {
   # Will only work if dim theta and N > 1
-  dim1 <- as.vector(mcmc.table$'theta[1]')
-  dim2 <- as.vector(mcmc.table$'N[1]')  
+  dim1 <- as.vector(mcmc.table$'Njuv[1]')
+  dim2 <- as.vector(mcmc.table$'surv[1]')  
 }
 
 def.par <- par(no.readonly = TRUE)
-quartz()
+
 f.density.bivar(dim1,dim2,nlevels=3,nb.points=2000)
 
 
@@ -195,16 +195,16 @@ boxplot(mcmc.table.var[,1:18], at = 1:18, xlim=c(1,19), outline = FALSE, col = c
 if (length(as.vector(mcmc.table$'a'))!=0 & length(as.vector(mcmc.table$'b'))!=0 & length(as.vector(mcmc.table$'sigma'))!=0)
 {
   
-x1 <- as.vector(mcmc.table$'a')
-x2 <- as.vector(mcmc.table$'b')
-x3 <- as.vector(mcmc.table$'sigma')
+x1 <- as.vector(mcmc.table$'Njuv[1]')
+x2 <- as.vector(mcmc.table$'surv[1]')
+
 
 def.par <- par(no.readonly = TRUE)
-quartz()
+
 
 par(pch='.')
 
-pairs( cbind(x1,x2,x3),labels=c("a","b","sigma"), 
+pairs( cbind(x1,x2),labels=c("Njuv[1]","surv[1]"), 
 	 lower.panel=panel.smooth,
 	 diag.panel=panel.dens, 
 	 upper.panel=panel.cor,
@@ -382,9 +382,8 @@ if (length(as.vector(mcmc.table$'surv[1]'))!=0){
   
   var = "surv"
   mcmc.var = mcmc[,which(substr(varnames(mcmc),1,nchar(var))==paste(var,"",sep=""))]
-  mcmc.table.var <- as.data.frame(as.matrix(quartz(mcmc.var)))
+  mcmc.table.var <- as.data.frame(as.matrix(mcmc.var))
   
-  quartz()
   boxplot(mcmc.table.var[,1:17], at = 1:17, xlim=c(1,18), outline = FALSE, col = c(rep("white",times=9),"red","red",rep("white",times=7)))
   
 }

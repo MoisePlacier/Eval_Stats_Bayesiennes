@@ -1,8 +1,8 @@
 ---
-title: Modélisation hiérarchique bayésienne de la dynamique des populations de saumons
-  atlantiques
+title: "Modélisation hiérarchique bayésienne de la dynamique des populations de saumons atlantiques"
 author: "Placier Moïse & Vadim Lefevre"
 date: "`r Sys.Date()`"
+subtitle: "Application à l’estimation du flux de migration des smolts par capture–marquage–recapture (CMR)"
 output:
   pdf_document:
     toc: true
@@ -11,7 +11,7 @@ output:
     latex_engine: xelatex
   word_document:
     toc: true
-    toc_depth: '3'
+    toc_depth: 3
   html_document:
     toc: true
     toc_depth: 3
@@ -19,15 +19,18 @@ output:
     number_sections: true
     theme: united
     highlight: tango
-subtitle: Application à l’estimation du flux de migration des smolts par capture–marquage–recapture
-  (CMR)
 header-includes:
-- \usepackage{amsmath}
-- \usepackage{amssymb}
-- \usepackage{graphicx}
-- \usepackage{booktabs}
-- \usepackage{float}
+  - \usepackage{amsmath}
+  - \usepackage{amssymb}
+  - \usepackage{graphicx}
+  - \usepackage{booktabs}
+  - \usepackage{float}
+  - \usepackage{tocloft}
+  - \renewcommand{\cftsecfont}{\small}        % police sections TOC
+  - \renewcommand{\cftsubsecfont}{\footnotesize}   % police sous-sections TOC
+  - \renewcommand{\cftsubsubsecfont}{\scriptsize}  % police sous-sous-sections TOC
 ---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -169,21 +172,36 @@ Nous commençons par l’évaluation de la convergence des hyperparamètres $a$,
 ![Traceplots des hyperparamètres a, b et σ. Les chaînes sont bien mélangées et régulières.](img/TracePlot_a_b_sigma.png){ width=80% }
 
 ```{r, echo=FALSE}
-diag_hyper <- data.frame(
-  Paramètre = c("a", "b", "sigma", "Multivarié"),
-  PSRF = c(1.01, 1.01, 1.01, 1.02),
-  PSRF_95_CI_sup = c(1.05, 1.04, 1.02, "--"),
-  Interprétation = c(
-  "Convergence satisfaisante",
-  "Convergence satisfaisante",
-  "Convergence satisfaisante",
-  "Convergence globale"
-  )
+diag_conv_hyper <- data.frame(
+Paramètre = c(
+"a",
+"b",
+"σ",
+"Multivariate PSRF"
+),
+PSRF_point = c(
+1.00,
+1.00,
+1.01,
+1.01
+),
+PSRF_upper_95 = c(
+1.01,
+1.01,
+1.04,
+"--"
+),
+Interprétation = c(
+"Convergence satisfaisante",
+"Convergence satisfaisante",
+"Convergence satisfaisante",
+"Convergence globale des hyperparamètres"
+)
 )
 
 kable(
-diag_hyper,
-caption = "Diagnostic de convergence des hyperparamètres (PSRF de Gelman-Rubin).",
+diag_conv_hyper,
+caption = "diagnostics de convergence pour les hyperparamètres du modèle.",
 align = "lccc"
 )
 ```
@@ -251,6 +269,7 @@ La figure suivante montre la densité postérieure de $\sigma^2_{\text{z}}$ qui 
 ![variabilité résiduelle interannuelle de logit(theta(t)) ∼ Q(t) ](img/Densite_sigma.png){ width=40% }
 
 La simple valeur de $\sigma^2_{\text{z}}$ n’est pas directement interprétable comme la proportion de variance expliquée de $\theta(t)$. Pour quantifier l’importance relative de l’effet du débit et de la variabilité résiduelle, on calcule l’analogue d’un $R^2$ sur l’échelle logit :
+
 $$
 R^2_{\text{logit}} = \frac{\mathrm{Var}(\hat{\text{logit}}(\theta_t))}{\mathrm{Var}(\hat{\text{logit}}(\theta_t)) + \sigma^2_{\text{z}}}, \quad \text{où} \quad \hat{\text{logit}}(\theta_t) = a + b Q_{\text{scaled}}.
 $$
@@ -294,23 +313,168 @@ Les distributions de $\theta(t)$ sont relativement bien définies, bénéficiant
 
 La figure suivante présente la loi jointe de $(\theta(1), N(1))$ pour l'année 1. 
 
-![Loi (theta(1), N(1))](img/Loi_jointe.png){ width=40% }
+![Loi (theta(1), N(1))](img/Loi_jointe.png){ width=40% } 
 
 On observe une corrélation négative entre l’efficacité du piège $\theta_i$ et l’abondance $N_i$. Cela est conforme est conforme aux propriétés des modèles de Capture–Marquage–Recapture : pour un nombre de captures observées donné, une faible efficacité de capture implique nécessairement une abondance plus élevée, et réciproquement.
 
-Cette figure illustre clairement la propagation explicite de l’incertitude entre ces deux paramètres. l’étalement conjoint de la distribution montre que l’incertitude sur l’efficacité de capture $\theta(1)$ se répercute directement sur l’estimation de l’abondance $N(1)$. Le modèle fournit ainsi une distribution a posteriori réaliste de $N(1)$. À l’inverse, une approche fréquentiste fondée sur une valeur prédite et fixée de $\theta(1)$ conduirait à une sous-estimation énorme de l’incertitude réelle associée à l’abondance.
+Cette figure illustre parfaitement la propagation explicite de l’incertitude entre ces deux paramètres. L’étalement conjoint de la distribution montre que l’incertitude sur l’efficacité de capture $\theta(1)$ se répercute directement sur l’estimation de l’abondance $N(1)$. Le modèle fournit ainsi une distribution a posteriori réaliste de $N(1)$. À l’inverse, une approche fréquentiste fondée sur une valeur prédite et fixée de $\theta(1)$ conduirait à une sous-estimation énorme de l’incertitude réelle associée à l’abondance.
 
 ### Abondance annuelle $N(t)$
 
-Enfin, les estimations du nombre $N(t)$ de smolts migrants vers l'océan chaques années sont présentés sur la figure suivante (avec intervalles de confiances à 95%). 
+Enfin, les distributions estimatimées du nombre $N(t)$ de smolts migrants vers l'océan chaques années sont présentés sur la figure suivante (avec intervalles de confiances à 95%). 
 
 
-![Estimations de N(t)](img/NT.png){ width=80% }
+![Estimations de N(t)](img/NT.png){ width=80%}
+
 
 On observe une forte variabilité interannuelle de l’abondance des smolts, avec des valeurs allant de quelques centaines à plus de 2500 individus selon les années. Pour les années 10 et 11 (1995 et 1996), pour lesquelles les données de recapture sont manquantes, les estimations restent néanmoins bien définies, avec des distributions relativement étroites pour $N(t)$. Cette précision résulte directement de l’intégration hiérarchique du modèle.
 
 En effet, les estimations de l’efficacité de capture $\theta(t)$ pour ces années bénéficient de l’effet de shrinkage induit par la structure hiérarchique et par l’inclusion du débit $Q(t)$ comme covariable explicative. Les valeurs de $\theta(t)$ sont ainsi informées par l’ensemble des années **data-rich** observées et par la relation structurelle entre $\theta(t)$ et le débit. Cette meilleure précision sur $\theta(t)$ se propage mécaniquement aux estimations de l’abondance $N(t)$, via la relation de capture propre aux modèles CMR. 
 
 Ces résultats mettent en évidence l’intérêt du modèle hiérarchique intégré : il stabilise l’estimation des paramètres latents, assure une propagation cohérente de l’incertitude et améliore la robustesse des prédictions, même pour les années avec des données manquantes.
+
+\newpage
+
+# Question bonus 
+
+L’objectif ici est d’estimer le taux de survie des juvéniles vers le stade smolt âgé d’un an. Dans un premier temps, le nombre de smolts âgés de 1 an dévalant la rivière chaque année est estimé à partir du nombre total de smolts (N(t)) et de la proportion de smolts âgés de 1 an (pSm1(t)) disponible dans le jeu de données. Dans un second temps, ce nombre estimé est mis en relation avec l’abondance de juvéniles de l’année précédente (Nb_juv0_previous_year) afin de calculer annuellement le taux de survie des juvéniles vers les smolts d’un an. Nous pourrons ensuite discuter de la variabilité interannuelle de la survie.
+
+## Modèle hiérarchique pour la survie juvénile → smolt
+
+### Construction du nombre smolts âgés de 1 an
+
+Le modèle part de l’abondance totale de smolts N(t) dévalant la rivière, estimée par le modèle CMR. La proportion de smolts âgés de 1 an, pSm1(t), est considérée connue à partir des observations. Cette **hypothèse forte sur pSm1(t)** nous permet de calculer de manière déterministe le nombre de smolts âgés d’un an ainsi : 
+
+$$N_{\text{smolt,1}}(t) = N(t) . pSm1(t)$$
+
+### Niveau latent 1 : abondance réelle de juvéniles
+
+Afin de tenir compte de l’erreur d’observation sur Nb_juv0_previous_year, nous introduisons une variable latente $N_{\text{juv}}(t-1)$, représentant l’abondance biologique « réelle » de juvéniles, qui n’est pas directement observable. L’effectif observé $N_{\text{juv,obs}}(t-1)$ est alors considéré comme une réalisation bruitée de cette quantité latente mais uniquement pour les années où des données sont disponibles. Pour les années où $N_{\text{juv,obs}}$ est manquant, on pourrait laisser cette variable entièrement latente et faire son estimation via le lien hiérarchique avec les autres années, mais comme cela ne concerne que l'année 1991 on va simplement l'ignorer.
+
+Le choix du processus génératif de ces observations doit respecter la nature du processsus observé. Une loi normale n’est pas appropriée pour modéliser $N_{\text{juv,obs}}(t-1)$, car elle est définie sur $\mathbb{R}$ et autorise des valeurs négatives avec une probabilité non nulle. Cela n'est pas compatible avec une mesure d'effectif, en particulier, le risque de génèrer une valeur négative est élevée lorsque que les abondances observées sont faibles comme c'est le cas certaines années.
+
+Par ailleurs, les dispositifs d’échantillonnage utilisés en écologie (pêche électrique, comptages, indices d’abondance) induisent généralement des erreurs proportionnelles à la taille de la population. L’erreur d’observation est donc plus naturellement décrite comme multiplicative que comme additive, ce qui correspond à une erreur additive sur l’échelle logarithmique.
+
+Pour répondre à ces contraintes, l’incertitude sur les observations est généralement modélisée à l’aide d’une loi log-normale, équivalente à supposer une erreur normale sur $\log N_{\text{juv}}(t-1)$ :
+
+$$\log(N_{\text{juv,obs}}(t-1)) = \log(N_{\text{juv}}(t-1)) + \varepsilon(t), \quad \varepsilon(t) \sim \mathcal{N}(0, \tau^{-1}) \quad <=> \quad N_{\text{juv,obs}}(t-1) \sim \text{LogNormal}(\log N_{\text{juv}}(t-1), \tau) $$
+
+où $\tau$ est l'inverse de la variance décrivant l’intensité de l’erreur d’observation sur l’échelle logarithmique.
+
+#### Modélisation de l’incertitude d’observation des juvéniles
+
+Dans notre démarche, nous choisissons de fixer $\tau = 400$ afin que l’incertitude corresponde à un coefficient de variation (CV) de 5 %. On considère que la variabilité principale est portée par la survie $\text{surv}(t)$ et par la dynamique démographique, et non par la dispersion des observations autour de la valeur réelle. Fixer $\tau$ permet d’éviter une confusion entre incertitude d’observation et variabilité biologique, qui rendrait l’estimation de $\text{surv}(t)$ plus complexe sans prior très informatif sur $\tau$. 
+
+
+### Niveau latent 2 : taux de survie annuel
+
+Dans notre modèle hiérarchique, pour chaque année $t$, le nombre de smolts âgés de 1 an est considéré comme le résultat de la survie d’une cohorte de juvéniles de l’année précédente. Le taux de survie annuel, noté $\text{surv}(t)$, est un paramètre latent du modèle:
+
+$$N_{\text{smolt,1}}(t) = N_{\text{juv}}(t-1).\text{surv}(t)$$
+
+Afin d'imposer explicitement $0 \le \text{surv}(t) \le 1$, on lui assigne un prior Beta peu informatif : 
+$$\text{surv}(t)  \sim \text{Beta}(1,1)$$
+On peut se permettre un prior peu informatif pour $\text{surv}(t)$ nottament grâce à l'hypothèse forte sur $pSm1(t)$ qui nous permet de calculer de manière déterministe $N_{\text{smolt,1}}(t)$ ce qui ancre la relation entre juvéniles et smolts et réduit la possibilité d’estimations aberrantes. Enfin, La variabilité interannuelle de la survie est directement capturée par la distribution postérieure de $\text{surv}(t)$.
+
+## Résultats 
+
+### Diagnostics convergence MCMC
+
+![Traceplots pour la survie des juvéniles et l’abondance latente de juvéniles (Njuv)](img/Traceplot_juv_surv.png) 
+
+```{r, echo=FALSE}
+diag_conv <- data.frame(
+Paramètre = c(
+"surv[2]", "surv[3]", "surv[4]", "Multivariate PSRF",
+"Njuv[3]", "Njuv[4]", "Njuv[5]", "Multivariate PSRF"
+),
+PSRF_point = c(
+1.01, 1.00, 1.00, 1.03, # valeurs extraites du gelman.diag
+1.00, 1.00, 1.00, 1.01
+),
+PSRF_upper_95 = c(
+1.01, 1.00, 1.01, "--",
+1.00, 1.00, 1.00, "--"
+),
+Interprétation = c(
+"Convergence satisfaisante", "Convergence satisfaisante", "Convergence satisfaisante",
+"Convergence globale sur 17 années",
+"Convergence satisfaisante", "Convergence satisfaisante", "Convergence satisfaisante",
+"Convergence globale sur 17 années"
+)
+)
+
+kable(
+diag_conv,
+caption = "Extrait des diagnostics de convergence Gelman-Rubin pour surv(t) et Njuv(t). Le PSRF multivarié montre la convergence globale.",
+align = "lccc"
+)
+```
+
+
+Le contôle visuel des chaînes MCMC montre qu'elles ont convergé de manière satisfaisante vers les distributions postérieures des paramètres. Les diagnostics de Gelman–Rubin indiquent également une convergence satisfaisante des paramètres avec des PSRF proches de 1 et un PSRF multivarié égal à 1.03 et 1.01 respectivement.
+
+
+### Distribution du taux de survie annuel surv[i]
+
+![Distribution du taux de survie annuel](img/Distrib_surv.png) 
+
+Les distributions de $\text{surv}(t)$ sont relativement bien définies avec des distributions contractées. Le modèle capture clairement une variabilité interannuelle forte de la survie juvénile. 
+
+\newpage
+
+![Lois jointes éstimées du taux de survie et du nombre de juvénils](img/Densite_marginale_surv_njuv.png){ width=40% }
+
+Le graphique illustre la loi conjointe estimée du nombre de juvéniles et de leur taux de survie. On y observe une corrélation négative : lorsque le nombre de juvéniles augmente, le taux de survie tend à diminuer. Cette relation résulte de la structure même du modèle, où un nombre plus élevé de juvéniles doit s’accompagner d’un taux de survie plus faible pour que la vraisemblance d’observer les valeurs mesurées reste cohérente.
+
+Même si ici cette corrélation négative est en grande partie une conséquence de la construction du modèle, il reproduit ce que l’on pourrait interpréter comme un effet de densité ou de compétition : à mesure que le nombre de juvéniles augmente, la survie individuelle diminue.
+
+Pour évaluer si l’effet densité / compétition pourrait expliquer la variabilité interannuelle du taux de survie des juvéniles, nous avons tracé ce graphique sous forme de scatter plot représentant les estimations issues des simulations MCMC. Chaque nuages de points représente les densités estimées annuelles de juvéniles et des taux de survie associés.
+
+![Scatter plot des estimations MCMC : taux de survie x log(nombre de juvénils)](img/surv_njuv.png){width=80%}
+
+On observe qu’aucune tendance claire n’émerge entre le nombre de juvéniles et leur survie, suggérant que ces facteurs de densité ne suffisent pas à expliquer la variabilité interannuelle. Cette variabilité est probablement davantage influencée par des variables environnementales. Pour explorer cette hypothèse, nous proposons de visualiser ensuite la relation entre le débit (la seule variable environnementale disponible) et le taux de survie.
+
+![distribution estimée du taux de survie en fonction du débit](img/Debit_surv.png){width=80%}
+
+Le graphique montre que le taux de survie des juvéniles ne présente pas de tendance en fonction du débit. Il ne semble donc pas y avoir de corrélation directe entre ces deux variables. La variabilité interannuelle observée sur le taux de survie est probablement mieux expliquée par d’autres facteurs environnementaux que le débit seul.
+
+
+![Distribution des abondances annuelles estimées et distribution de la survie](img/Hell_plot.png){width=80%}
+
+Enfin sur ce graphique, on observe que la distribution estimée du nombre de juvéniles de l'année précédente (Njuv à l'année n‑1) se situe parfois en dessous de la distribution du nombre total d'individus à l'année n $N(t)$, comme c'est le cas pour l'année 9. Cette différence s'explique probablement par l'hypothèse simplificatrice sur le paramètre pSm1, que l'on considère ici comme fixe, alors qu'en réalité il présente une variabilité.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
