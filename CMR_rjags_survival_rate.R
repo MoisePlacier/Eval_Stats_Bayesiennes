@@ -354,62 +354,55 @@ library(dplyr)
 library(tidyr)
 
 # Supposons df_long contient N_total, N_juv et surv
+
+# Conversion MCMC en data.frame
+mcmc.table <- as.data.frame(as.matrix(mcmc))
+
+# Colonnes Njuv et surv
+Njuv_cols <- grep("^Njuv\\[", colnames(mcmc.table))
+Nsmolt1_cols <- grep("^N_smolt1\\[", colnames(mcmc.table))
+surv_cols <- grep("^surv\\[", colnames(mcmc.table))
+N_cols <- grep("^N\\[", colnames(mcmc.table))
+
+# Passage en format long
+dd_long <- data.frame(
+  year = factor(rep(1:length(Njuv_cols), each = nrow(mcmc.table))),
+  Njuv = as.vector(as.matrix(mcmc.table[, Njuv_cols])),
+  N = as.vector(as.matrix(mcmc.table[, N_cols])),
+  surv = as.vector(as.matrix(mcmc.table[, surv_cols])),
+  Nsmolt1 = as.vector(as.matrix(mcmc.table[, Nsmolt1_cols]))
+)
+
+N_long <- data.frame(
+  year = rep(1:length(N_cols), each = nrow(mcmc.table)),
+  value = as.vector(as.matrix(mcmc.table[, N_cols])),
+  type = "N"
+)
+
+Njuv_long <- data.frame(
+  year = rep(1:length(Njuv_cols), each = nrow(mcmc.table)),
+  value = as.vector(as.matrix(mcmc.table[, Njuv_cols])),
+  type = "N_juv"
+)
+
+Nsmolt1_long <- data.frame(
+  year = rep(1:length(Njuv_cols), each = nrow(mcmc.table)),
+  value = as.vector(as.matrix(mcmc.table[, Nsmolt1_cols])),
+  type = "Nsmolt1"
+)
+
+df_long <- bind_rows(N_long, Njuv_long,Nsmolt1_long)
+
+
 # Transformer en format long pour ggplot
 df_plot <- df_plot %>%
   select(year, median, lower, upper, type) %>%
   mutate(year = factor(year))
 
-# Pour la survie, calculer distribution par année
-surv_summary <- dd_long %>%
-  group_by(year) %>%
-  summarise(
-    median = median(surv),
-    lower = quantile(surv, 0.05),
-    upper = quantile(surv, 0.95)
-  ) %>%
-  mutate(type = "surv") %>%
-  mutate(year = factor(year))
 
 # Pour superposer sur la même figure, il faut mettre la survie sur une échelle comparable
 # On normalise ici entre 0 et max(median N_total/N_juv)
 max_abund <- max(df_plot$upper)
-surv_summary <- surv_summary %>%
-  mutate(
-    median_scaled = median * max_abund,
-    lower_scaled = lower * max_abund,
-    upper_scaled = upper * max_abund
-  )
-
-# Plot combiné
-ggplot() +
-  # Boxplots N_total et N_juv
-  geom_boxplot(data = df_long %>% filter(type %in% c("N_total","N_juv")),
-               aes(x = factor(year), y = value, fill = type, color = type),
-               alpha = 0.4, outlier.shape = NA) +
-  scale_fill_manual(values = c("N_total" = "blue", "N_juv" = "orange")) +
-  scale_color_manual(values = c("N_total" = "darkblue", "N_juv" = "darkorange")) +
-  
-  # Survie en line avec intervalle
-  geom_ribbon(data = surv_summary,
-              aes(x = year, ymin = lower_scaled, ymax = upper_scaled),
-              fill = "red", alpha = 0.2) +
-  geom_line(data = surv_summary,
-            aes(x = year, y = median_scaled, group = 1),
-            color = "red", size = 1) +
-  
-  # Axes
-  scale_y_continuous(
-    name = "Abondance estimée",
-    sec.axis = sec_axis(~ ./max_abund, name = "Taux de survie median")
-  ) +
-  
-  labs(
-    x = "Année",
-    title = "Abondance annuelle et distribution de la survie"
-  ) +
-  theme_minimal(base_size = 14) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
 
 # Préparer les données de survie
 surv_summary <- dd_long %>%
@@ -429,11 +422,11 @@ surv_summary <- dd_long %>%
 # Plot combiné
 ggplot() +
   # Boxplots N_total et N_juv
-  geom_boxplot(data = df_long %>% filter(type %in% c("N_total","N_juv")),
+  geom_boxplot(data = df_long %>% filter(type %in% c("N","N_juv","Nsmolt1")),
                aes(x = factor(year), y = value, fill = type, color = type),
                alpha = 0.4, outlier.shape = NA) +
-  scale_fill_manual(values = c("N_total" = "blue", "N_juv" = "orange")) +
-  scale_color_manual(values = c("N_total" = "darkblue", "N_juv" = "darkorange")) +
+  scale_fill_manual(values = c("N" = "blue","Nsmolt1"="green", "N_juv" = "orange")) +
+  scale_color_manual(values = c("N" = "darkblue", "N_juv" = "darkorange","Nsmolt1"="darkgreen")) +
   
   # Survie en ligne + intervalle (ribbon)
   geom_ribbon(data = surv_summary,

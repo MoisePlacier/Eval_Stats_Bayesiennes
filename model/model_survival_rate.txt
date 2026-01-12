@@ -47,7 +47,7 @@ rm[i] ~ dbin(theta[i], m[i])
 # -------------------------------
 # Latent juvenile abundance (N_juv)
 # -------------------------------
-tau_surv <- 1000
+tau_surv <- 400
 for(i in 1:n){
 
     # 3.1 Nombre de smolts 1 an

@@ -4,14 +4,14 @@ author: "Placier Moïse & Vadim Lefevre"
 date: "`r Sys.Date()`"
 subtitle: "Application à l’estimation du flux de migration des smolts par capture–marquage–recapture (CMR)"
 output:
+  word_document:
+    toc: true
+    toc_depth: 3
   pdf_document:
     toc: true
     toc_depth: 3
     number_sections: true
     latex_engine: xelatex
-  word_document:
-    toc: true
-    toc_depth: 3
   html_document:
     toc: true
     toc_depth: 3
@@ -357,8 +357,9 @@ Par ailleurs, les dispositifs d’échantillonnage utilisés en écologie (pêch
 
 Pour répondre à ces contraintes, l’incertitude sur les observations est généralement modélisée à l’aide d’une loi log-normale, équivalente à supposer une erreur normale sur $\log N_{\text{juv}}(t-1)$ :
 
-$$\log(N_{\text{juv,obs}}(t-1)) = \log(N_{\text{juv}}(t-1)) + \varepsilon(t), \quad \varepsilon(t) \sim \mathcal{N}(0, \tau^{-1}) \quad <=> \quad N_{\text{juv,obs}}(t-1) \sim \text{LogNormal}(\log N_{\text{juv}}(t-1), \tau) $$
-
+$$\log(N_{\text{juv,obs}}(t-1)) = \log(N_{\text{juv}}(t-1)) + \varepsilon(t), \quad \varepsilon(t) \sim \mathcal{N}(0, \tau^{-1})$$ 
+soit 
+$$N_{\text{juv,obs}}(t-1) \sim \text{LogNormal}(\log N_{\text{juv}}(t-1), \tau) $$
 où $\tau$ est l'inverse de la variance décrivant l’intensité de l’erreur d’observation sur l’échelle logarithmique.
 
 #### Modélisation de l’incertitude d’observation des juvéniles
@@ -371,7 +372,6 @@ Dans notre démarche, nous choisissons de fixer $\tau = 400$ afin que l’incert
 Dans notre modèle hiérarchique, pour chaque année $t$, le nombre de smolts âgés de 1 an est considéré comme le résultat de la survie d’une cohorte de juvéniles de l’année précédente. Le taux de survie annuel, noté $\text{surv}(t)$, est un paramètre latent du modèle:
 
 $$N_{\text{smolt,1}}(t) = N_{\text{juv}}(t-1).\text{surv}(t)$$
-
 Afin d'imposer explicitement $0 \le \text{surv}(t) \le 1$, on lui assigne un prior Beta peu informatif : 
 $$\text{surv}(t)  \sim \text{Beta}(1,1)$$
 On peut se permettre un prior peu informatif pour $\text{surv}(t)$ nottament grâce à l'hypothèse forte sur $pSm1(t)$ qui nous permet de calculer de manière déterministe $N_{\text{smolt,1}}(t)$ ce qui ancre la relation entre juvéniles et smolts et réduit la possibilité d’estimations aberrantes. Enfin, La variabilité interannuelle de la survie est directement capturée par la distribution postérieure de $\text{surv}(t)$.
@@ -415,23 +415,25 @@ align = "lccc"
 Le contôle visuel des chaînes MCMC montre qu'elles ont convergé de manière satisfaisante vers les distributions postérieures des paramètres. Les diagnostics de Gelman–Rubin indiquent également une convergence satisfaisante des paramètres avec des PSRF proches de 1 et un PSRF multivarié égal à 1.03 et 1.01 respectivement.
 
 
-### Distribution du taux de survie annuel surv[i]
+### Analyse de la variabilité interannuelle de la survie juvénile
 
-![Distribution du taux de survie annuel](img/Distrib_surv.png) 
+![Distribution du taux de survie annuel](img/Distrib_surv.png){ width=90% }
 
 Les distributions de $\text{surv}(t)$ sont relativement bien définies avec des distributions contractées. Le modèle capture clairement une variabilité interannuelle forte de la survie juvénile. 
 
 \newpage
 
-![Lois jointes éstimées du taux de survie et du nombre de juvénils](img/Densite_marginale_surv_njuv.png){ width=40% }
+![Lois jointes éstimées du taux de survie et du nombre de juvénils](img/Densite_marginale_surv_njuv.png){ width=35% }
 
-Le graphique illustre la loi conjointe estimée du nombre de juvéniles et de leur taux de survie. On y observe une corrélation négative : lorsque le nombre de juvéniles augmente, le taux de survie tend à diminuer. Cette relation résulte de la structure même du modèle, où un nombre plus élevé de juvéniles doit s’accompagner d’un taux de survie plus faible pour que la vraisemblance d’observer les valeurs mesurées reste cohérente.
+Le graphique représente la loi conjointe a posteriori du nombre de juvéniles $N_{\text{juv}}(t)$ et du taux de survie $\text{surv}(t)$ estimée par le modèle. Une corrélation négative apparaît clairement : les valeurs élevées de $N_{\text{juv}}(t)$ sont associées à des taux de survie plus faibles.
 
-Même si ici cette corrélation négative est en grande partie une conséquence de la construction du modèle, il reproduit ce que l’on pourrait interpréter comme un effet de densité ou de compétition : à mesure que le nombre de juvéniles augmente, la survie individuelle diminue.
+Cette relation est en grande partie induite par la structure du modèle. En effet, pour une abondance de smolts observée donnée, un nombre élevé de juvéniles implique mécaniquement un taux de survie plus faible afin de maintenir la cohérence de la vraisemblance. La corrélation négative observée reflète donc avant tout une contrainte d’identifiabilité entre ces deux quantités latentes.
 
-Pour évaluer si l’effet densité / compétition pourrait expliquer la variabilité interannuelle du taux de survie des juvéniles, nous avons tracé ce graphique sous forme de scatter plot représentant les estimations issues des simulations MCMC. Chaque nuages de points représente les densités estimées annuelles de juvéniles et des taux de survie associés.
+Néanmoins, cette structure reproduit un schéma cohérent avec une interprétation écologique classique en termes de densité-dépendance ou de compétition : à densité de juvéniles élevée, la survie individuelle tend à diminuer. Dans cette optique, le modèle permet de formuler une hypothèse plausible, sans toutefois fournir une preuve directe d’un mécanisme densité-dépendant.
 
-![Scatter plot des estimations MCMC : taux de survie x log(nombre de juvénils)](img/surv_njuv.png){width=80%}
+Afin d’explorer plus finement cette hypothèse, le graphique suivant représente sous forme de nuages de points les échantillons a posteriori issus des simulations MCMC, année par année. Chaque nuage de points représente ainsi les distributions conjointes estimées de $N_{\text{juv}}(t)$ et $\text{surv}(t)$, et permet d’examiner si la variabilité interannuelle du taux de survie pourrait être partiellement expliquée par des différences de densité de juvéniles.
+
+![Scatter plot des estimations MCMC : taux de survie x log(nombre de juvénils)](img/surv_njuv.png){width=70%}
 
 On observe qu’aucune tendance claire n’émerge entre le nombre de juvéniles et leur survie, suggérant que ces facteurs de densité ne suffisent pas à expliquer la variabilité interannuelle. Cette variabilité est probablement davantage influencée par des variables environnementales. Pour explorer cette hypothèse, nous proposons de visualiser ensuite la relation entre le débit (la seule variable environnementale disponible) et le taux de survie.
 
@@ -440,11 +442,13 @@ On observe qu’aucune tendance claire n’émerge entre le nombre de juvéniles
 Le graphique montre que le taux de survie des juvéniles ne présente pas de tendance en fonction du débit. Il ne semble donc pas y avoir de corrélation directe entre ces deux variables. La variabilité interannuelle observée sur le taux de survie est probablement mieux expliquée par d’autres facteurs environnementaux que le débit seul.
 
 
-![Distribution des abondances annuelles estimées et distribution de la survie](img/Hell_plot.png){width=80%}
+![Distribution des abondances annuelles estimées et distribution de la survie](img/Hell_plot.png){width=70%}
 
-Enfin sur ce graphique, on observe que la distribution estimée du nombre de juvéniles de l'année précédente (Njuv à l'année n‑1) se situe parfois en dessous de la distribution du nombre total d'individus à l'année n $N(t)$, comme c'est le cas pour l'année 9. Cette différence s'explique probablement par l'hypothèse simplificatrice sur le paramètre pSm1, que l'on considère ici comme fixe, alors qu'en réalité il présente une variabilité.
+Enfin, ce graphique met en évidence que, pour certaines années (notamment l’année 9) la distribution a posteriori du nombre de juvéniles de l’année précédente $N_{\text{juv}}(t)$ se situe quasiment au même niveau de celle du nombre de smolts âgés d’un an $N_{\text{smolt,1}}(t)$. Cela est peu plausible d’un point de vue biologique, puisqu’elle impliquerait un taux de survie juvénile–smolt très élevé, proche de 1.
 
+Cela résulte vraisemblablement d’un artefact de modélisation lié à l’hypothèse simplificatrice formulée sur le paramètre $pSm1(t)$. Dans le modèle, $pSm1(t)$ est considéré comme connu et déterministe, alors qu’il est en réalité soumis à une variabilité interannuelle. Cette hypothèse impacte directement l’estimation de $N_{\text{smolt,1}}(t)$, ce qui peut conduire à des incohérences ponctuelles entre les distributions de $N_{\text{juv}}(t)$ et $N_{\text{smolt,1}}(t)$.
 
+Par conséquent, une partie de la variabilité interannuelle estimée du taux de survie $\text{surv}(t)$ peut être attribuée à l’absence de prise en compte de l’incertitude associée à $pSm1(t)$. L’introduction d’un modèle hiérarchique pour $pSm1(t)$, ou l’intégration explicite de son incertitude constituerait une amélioration certaine de la modélisation et stabiliserait l'estimation de $\text{surv}(t)$.
 
 
 
